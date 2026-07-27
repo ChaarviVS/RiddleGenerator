@@ -1,0 +1,2 @@
+# RiddleGenerator
+Makes riddles
