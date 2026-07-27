@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Riddle Spark</title>
+    <style>
+      :root {
+        --bg: #07111f;
+        --panel: rgba(255, 255, 255, 0.14);
+        --panel-strong: rgba(255, 255, 255, 0.24);
+        --text: #f8fbff;
+        --muted: #c8d7f0;
+        --accent: #ff5d8f;
+        --accent-2: #7c6cff;
+        --accent-3: #00d4ff;
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Roboto, sans-serif;
+        min-height: 100vh;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(255, 93, 143, 0.35), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(0, 212, 255, 0.3), transparent 30%),
+          linear-gradient(135deg, #07111f 0%, #101d34 45%, #1e2a4a 100%);
+        overflow-x: hidden;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: auto;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        filter: blur(70px);
+        opacity: 0.35;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      body::before { top: -80px; right: -80px; background: var(--accent); }
+      body::after { bottom: -80px; left: -80px; background: var(--accent-3); }
+
+      .app-shell {
+        position: relative;
+        z-index: 1;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px 18px 48px;
+      }
+
+      .hero {
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 28px;
+        background: var(--panel);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+        font-size: 0.95rem;
+        color: #fdf2ff;
+      }
+
+      h1 {
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        margin: 12px 0 8px;
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 1rem;
+      }
+
+      .panel-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .card {
+        border-radius: 24px;
+        background: rgba(10, 16, 32, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 1.1rem;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 118px;
+        padding: 14px 14px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        resize: vertical;
+        font: inherit;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      textarea:focus {
+        outline: 2px solid rgba(0, 212, 255, 0.5);
+        border-color: transparent;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      button {
+        border: none;
+        cursor: pointer;
+        font: inherit;
+        border-radius: 999px;
+        padding: 11px 16px;
+        color: white;
+        transition: transform 180ms ease, box-shadow 180ms ease;
+      }
+
+      button:hover { transform: translateY(-2px); }
+
+      .primary {
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        box-shadow: 0 10px 24px rgba(124, 108, 255, 0.28);
+      }
+
+      .secondary {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .chip {
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 0.92rem;
+      }
+
+      .result-card {
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .status {
+        color: var(--muted);
+        font-size: 0.95rem;
+        min-height: 24px;
+      }
+
+      .bubble {
+        border-radius: 20px;
+        padding: 16px;
+        margin-top: 10px;
+        background: linear-gradient(135deg, rgba(124, 108, 255, 0.18), rgba(0, 212, 255, 0.16));
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        line-height: 1.7;
+        white-space: pre-wrap;
+      }
+
+      .bubble strong { color: #ffe3f0; }
+
+      .loader {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .loader span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: white;
+        display: inline-block;
+        animation: bounce 0.9s infinite alternate;
+      }
+
+      .loader span:nth-child(2) { animation-delay: 0.15s; }
+      .loader span:nth-child(3) { animation-delay: 0.3s; }
+
+      @keyframes bounce {
+        to { transform: translateY(-6px); opacity: 0.6; }
+      }
+
+      @media (max-width: 760px) {
+        .panel-grid { grid-template-columns: 1fr; }
+        .app-shell { padding: 14px 14px 40px; }
+        .hero { padding: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div class="hero-top">
+          <div>
+            <span class="badge">✨ Riddle Spark</span>
+            <h1>Make silly riddles that make people grin.</h1>
+            <p>Type a theme, a mood, or a random idea and let the generator turn it into a playful brain teaser.</p>
+          </div>
+        </div>
+
+        <div class="panel-grid">
+          <div class="card">
+            <h2>Ask for a riddle</h2>
+            <textarea id="promptInput" placeholder="Try: make me 3 riddles about pizza, space, or a sleepy dragon..."></textarea>
+            <div class="actions">
+              <button id="generateBtn" class="primary">Generate riddle</button>
+              <button id="surpriseBtn" class="secondary">Surprise me</button>
+            </div>
+            <div class="suggestions">
+              <span class="chip" data-value="Make me 3 funny riddles about tacos">Tacos</span>
+              <span class="chip" data-value="Create a silly riddle about a sleepy cat">Sleepy cat</span>
+              <span class="chip" data-value="Give me a magical riddle with a silly twist">Magical twist</span>
+            </div>
+          </div>
+
+          <div class="card result-card">
+            <div>
+              <h2>My goofy answer</h2>
+              <div id="status" class="status">Your next riddle is brewing...</div>
+              <div id="output" class="bubble">Ready to make your brain wobble? ✨</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const promptInput = document.getElementById("promptInput");
+      const generateBtn = document.getElementById("generateBtn");
+      const surpriseBtn = document.getElementById("surpriseBtn");
+      const output = document.getElementById("output");
+      const status = document.getElementById("status");
+
+      const endpointUrl = "https://vibe-proxy-gqv4.onrender.com/v1/chat/completions";
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: "Bearer sk-vibe-summer-2026"
+      };
+
+      function setStatus(message) {
+        status.textContent = message;
+      }
+
+      function setOutput(message) {
+        output.innerHTML = message;
+      }
+
+      function showThinking() {
+        setStatus("The riddle wizard is thinking...");
+        setOutput(`
+          <div class="loader" aria-label="Loading">
+            <span></span><span></span><span></span>
+          </div>
+        `);
+      }
+
+      async function generateRiddle(userPrompt) {
+        const prompt = `You are a playful riddle generator. Create 3 funny, clever, and creative riddles. Keep them short, memorable, and a little silly. User idea: ${userPrompt}`;
+
+        showThinking();
+
+        try {
+          // This fetch() POST request sends the user's idea to the classroom proxy server.
+          // The browser packages the message as JSON, adds the required headers, and awaits the server response.
+          const response = await fetch(endpointUrl, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              model: "class-chat-model",
+              messages: [{ role: "user", content: prompt }]
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // The proxy response is parsed from the expected path: data.choices[0].message.content
+          const content = data?.choices?.[0]?.message?.content || "No riddle came back.";
+
+          setStatus("A fresh riddle just popped out!");
+          setOutput(`<strong>Here you go:</strong><br><br>${content.replace(/\n/g, "<br>")}`);
+        } catch (error) {
+          console.error(error);
+          setStatus("The magic fizzled out. Please try again.");
+          setOutput("Oops! The riddle server did not reply properly. Try again in a moment.");
+        }
+      }
+
+      generateBtn.addEventListener("click", () => {
+        const userPrompt = promptInput.value.trim() || "make me a fun riddle about everyday chaos";
+        generateRiddle(userPrompt);
+      });
+
+      surpriseBtn.addEventListener("click", () => {
+        promptInput.value = "Create a delightfully silly riddle about a rainy day and a dancing umbrella";
+        generateRiddle(promptInput.value);
+      });
+
+      document.querySelectorAll(".chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          promptInput.value = chip.dataset.value;
+          generateRiddle(chip.dataset.value);
+        });
+      });
+
+      promptInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+          event.preventDefault();
+          const userPrompt = promptInput.value.trim() || "make me a playful riddle";
+          generateRiddle(userPrompt);
+        }
+      });
+    </script>
+  </body>
+</html>
